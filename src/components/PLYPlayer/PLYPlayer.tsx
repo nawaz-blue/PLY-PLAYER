@@ -1,7 +1,8 @@
+import React, { useRef, useEffect, useState } from "react";
 import * as THREE from "three";
 import { PLYLoader } from "three/examples/jsm/loaders/PLYLoader";
-import { useState, useRef, useEffect } from "react";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import logo from "../../../public/LOGO.svg";
 
 interface Props {
   mandibularFiles: File[];
@@ -17,16 +18,19 @@ function PLYPlayer(props: Props) {
   const mandibularRef = useRef<THREE.Mesh | null>(null);
   const maxillaryRef = useRef<THREE.Mesh | null>(null);
 
-  const [cameraPosition, setCameraPosition] = useState<{
-    x: number;
-    y: number;
-    z: number;
-  }>({ x: 0, y: 0.15, z: 3 });
-  const [showUpper, setShowUpper] = useState<boolean>(true);
-  const [showLower, setShowLower] = useState<boolean>(true);
+  const [cameraPosition, setCameraPosition] = useState({
+    x: 0,
+    y: 0.15,
+    z: 3,
+  });
+  const [showUpper, setShowUpper] = useState(true);
+  const [showLower, setShowLower] = useState(true);
 
   const init = () => {
     const container = containerRef.current;
+
+    const containerWidth = container ? container.clientWidth : 0;
+    const containerHeight = container ? container.clientHeight : 0;
 
     cameraRef.current = new THREE.PerspectiveCamera(
       35,
@@ -60,7 +64,8 @@ function PLYPlayer(props: Props) {
     if (!rendererRef.current) {
       rendererRef.current = new THREE.WebGLRenderer({ antialias: true });
       rendererRef.current.setPixelRatio(window.devicePixelRatio);
-      rendererRef.current.setSize(window.innerWidth, window.innerHeight);
+      // rendererRef.current.setSize(window.innerWidth, window.innerHeight);
+      rendererRef.current.setSize(containerWidth, containerHeight);
       rendererRef.current.outputEncoding = THREE.sRGBEncoding;
       container?.appendChild(rendererRef.current.domElement);
     }
@@ -141,7 +146,6 @@ function PLYPlayer(props: Props) {
     directionalLight.shadow.camera.far = 1;
     directionalLight.shadow.mapSize.width = 1024;
     directionalLight.shadow.mapSize.height = 1024;
-    // directionalLight.shadow.bias = -0.001;
   };
 
   const onWindowResize = () => {
@@ -198,17 +202,17 @@ function PLYPlayer(props: Props) {
       );
   }, [cameraPosition]);
 
-  const [isInitialized, setIsInitialized] = useState<boolean>(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [currentModelIndex, setCurrentModelIndex] = useState<number>(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentModelIndex, setCurrentModelIndex] = useState(0);
 
   const playPause = () => {
     setIsPlaying(!isPlaying);
   };
 
   const nextModel = () => {
-    if (currentModelIndex < 15 - 1) {
+    if (currentModelIndex < props.mandibularFiles.length - 1) {
       setCurrentModelIndex(currentModelIndex + 1);
     }
   };
@@ -222,7 +226,9 @@ function PLYPlayer(props: Props) {
   const updateTimeline = (event: React.MouseEvent<HTMLDivElement>) => {
     const timelineWidth = event.currentTarget.clientWidth;
     const clickX = event.nativeEvent.offsetX;
-    const newModelIndex = Math.floor((clickX / timelineWidth) * 15);
+    const newModelIndex = Math.floor(
+      (clickX / timelineWidth) * props.mandibularFiles.length
+    );
     setCurrentModelIndex(newModelIndex);
   };
 
@@ -252,13 +258,40 @@ function PLYPlayer(props: Props) {
 
   useEffect(() => {
     init();
-    console.log(props.mandibularFiles);
-    console.log(props.maxillaryFiles);
   }, [props.mandibularFiles, props.maxillaryFiles]);
 
   return (
     <>
-      <div className="App" ref={containerRef}>
+      <div
+        style={{
+          background: "#282828",
+        }}
+        className="p-6"
+      >
+        <div className="flex justify-between align-middle">
+          <button
+            type="button"
+            className="text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 rounded-full text-sm px-8 dark:bg-gray-600 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-gray-800"
+          >
+            Patient Details
+          </button>
+          <img src={logo} />
+          <div className="">
+            <button
+              type="button"
+              className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+            >
+              Download
+            </button>
+          </div>
+        </div>
+        <div
+          className="m-8"
+          style={{
+            minHeight: "600px",
+          }}
+          ref={containerRef}
+        ></div>
         <div
           style={{
             position: "absolute",
@@ -287,7 +320,7 @@ function PLYPlayer(props: Props) {
         <div
           style={{
             position: "absolute",
-            top: "85%",
+            top: "90%",
             left: "50%",
             display: "flex",
             justifyContent: "center",
@@ -295,8 +328,7 @@ function PLYPlayer(props: Props) {
             transform: "translateX(-50%)",
           }}
         >
-          <h1>{currentModelIndex}</h1>
-          <button onClick={prevModel}>Prev</button>
+          <button  onClick={prevModel}>Prev</button>
           <button onClick={playPause}>{isPlaying ? "Pause" : "Play"}</button>
           <button onClick={nextModel}>Next</button>
         </div>
@@ -322,7 +354,9 @@ function PLYPlayer(props: Props) {
           >
             <div
               style={{
-                width: `${(currentModelIndex / 15) * 100}%`,
+                width: `${
+                  (currentModelIndex / props.mandibularFiles.length) * 100
+                }%`,
                 height: "100%",
                 backgroundColor: "#007bff",
               }}
