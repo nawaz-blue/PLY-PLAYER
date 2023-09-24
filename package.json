@@ -10,12 +10,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@types/three": "^0.156.0",
     "file-saver": "^2.0.5",
     "flowbite": "^1.8.1",
     "flowbite-react": "^0.6.0",
     "jszip": "^3.10.1",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "three": "^0.117.1"
   },
   "devDependencies": {
     "@types/file-saver": "^2.0.5",
