@@ -1,7 +1,6 @@
 import axios from 'axios';
 
 onmessage = async (ev: MessageEvent) => {
-  console.log(ev);
   if (ev.data.type === 'upload') {
     const mandibularFiles = ev.data.mandibularFiles;
     const maxillaryFiles = ev.data.maxillaryFiles;
@@ -9,12 +8,12 @@ onmessage = async (ev: MessageEvent) => {
     const allFiles = [...mandibularFiles, ...maxillaryFiles];
     let timeElapsed = 0;
     const startTime = Date.now();
-
+    const folderName = generateRandomID()
     for (let i = 0; i < allFiles.length; i++) {
       const file = allFiles[i];
       try {
         const { data } = await axios.get(
-          `http://localhost:3001/get-pre-signed-url?filename=${file.name}`
+          `http://localhost:3001/get-pre-signed-url?filename=${file.name}&folderName=${folderName}`
         );
 
         await axios.put(data.url, file, {
@@ -36,3 +35,14 @@ onmessage = async (ev: MessageEvent) => {
     postMessage({ type: 'complete', timeElapsed });
   }
 };
+
+function generateRandomID() {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let randomID = '';
+  for (let i = 0; i < 5; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    randomID += characters.charAt(randomIndex);
+  }
+  return randomID;
+}
+
