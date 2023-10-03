@@ -1,12 +1,15 @@
-import React, { useRef, useEffect, useState } from "react";
-import * as THREE from "three";
-import { PLYLoader } from "three/examples/jsm/loaders/PLYLoader";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import logo from "../../../public/LOGO.svg";
+import React, { useRef, useEffect, useState } from 'react';
+import * as THREE from 'three';
+import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import logo from '../../../public/LOGO.svg';
+import UploadToast from '../UploadToast/UploadToast';
 
 interface Props {
   mandibularFiles: File[];
   maxillaryFiles: File[];
+  uploadPercentage: number;
+  timeElapsed: number;
 }
 
 function PLYPlayer(props: Props) {
@@ -77,7 +80,7 @@ function PLYPlayer(props: Props) {
     controlsRef.current.minDistance = 2;
     controlsRef.current.maxDistance = 5;
 
-    window.addEventListener("resize", onWindowResize, false);
+    window.addEventListener('resize', onWindowResize, false);
   };
 
   const changeModel = (modelIndex: number) => {
@@ -262,45 +265,42 @@ function PLYPlayer(props: Props) {
 
   return (
     <>
+      <UploadToast
+        uploadPercentage={props.uploadPercentage}
+        timeElapsed={props.timeElapsed}
+      />
       <div
         style={{
-          background: "#282828",
+          background: '#282828',
         }}
-        className="p-6"
+        className='p-6'
       >
-        <div className="flex justify-between align-middle">
+        <div className='flex justify-between align-middle'>
           <button
-            type="button"
-            className="text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 rounded-full text-sm px-8 dark:bg-gray-600 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-gray-800"
+            type='button'
+            className='text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 rounded-full text-sm px-8 dark:bg-gray-600 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-gray-800'
           >
             Patient Details
           </button>
           <img src={logo} />
-          <div className="">
-            <button
-              type="button"
-              className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
-            >
-              Download
-            </button>
-          </div>
+          <div className=''></div>
         </div>
         <div
-          className="m-8"
+          className='m-8'
           style={{
-            minHeight: "600px",
+            minHeight: '700px',
           }}
           ref={containerRef}
         ></div>
         <div
           style={{
-            position: "absolute",
-            top: "90%",
-            left: "80%",
-            display: "flex",
-            justifyContent: "center",
-            flexDirection: "column",
-            alignItems: "center",
+            position: 'absolute',
+            top: '90%',
+            left: '80%',
+            display: 'flex',
+            justifyContent: 'center',
+            flexDirection: 'column',
+            alignItems: 'center',
           }}
         >
           <button onClick={toggleUpper}>Upper</button>
@@ -319,37 +319,95 @@ function PLYPlayer(props: Props) {
         </div>
         <div
           style={{
-            position: "absolute",
-            top: "90%",
-            left: "50%",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            transform: "translateX(-50%)",
+            position: 'absolute',
+            top: '90%',
+            left: '50%',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            transform: 'translateX(-50%)',
           }}
         >
-          <button  onClick={prevModel}>Prev</button>
-          <button onClick={playPause}>{isPlaying ? "Pause" : "Play"}</button>
-          <button onClick={nextModel}>Next</button>
+          <button onClick={prevModel} className='mx-6'>
+            <svg
+              className='w-6 h-6 text-white dark:text-white'
+              aria-hidden='true'
+              xmlns='http://www.w3.org/2000/svg'
+              fill='currentColor'
+              viewBox='0 0 12 16'
+            >
+              <path d='M10.819.4a1.974 1.974 0 0 0-2.147.33l-6.5 5.773A2.014 2.014 0 0 0 2 6.7V1a1 1 0 0 0-2 0v14a1 1 0 1 0 2 0V9.3c.055.068.114.133.177.194l6.5 5.773a1.982 1.982 0 0 0 2.147.33A1.977 1.977 0 0 0 12 13.773V2.227A1.977 1.977 0 0 0 10.819.4Z' />
+            </svg>
+          </button>
+          <button onClick={playPause}>
+            {isPlaying ? (
+              <>
+                <svg
+                  className='w-6 h-6 text-white dark:text-white'
+                  aria-hidden='true'
+                  xmlns='http://www.w3.org/2000/svg'
+                  fill='currentColor'
+                  viewBox='0 0 12 16'
+                >
+                  <path d='M3 0H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2Zm7 0H9a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2Z' />
+                </svg>
+              </>
+            ) : (
+              <>
+                <svg
+                  className='w-6 h-6 text-white dark:text-white'
+                  aria-hidden='true'
+                  xmlns='http://www.w3.org/2000/svg'
+                  fill='currentColor'
+                  viewBox='0 0 14 16'
+                >
+                  <path d='M0 .984v14.032a1 1 0 0 0 1.506.845l12.006-7.016a.974.974 0 0 0 0-1.69L1.506.139A1 1 0 0 0 0 .984Z' />
+                </svg>
+              </>
+            )}
+          </button>
+          <button onClick={nextModel} className='mx-6'>
+            <svg
+              className='w-6 h-6 text-white dark:text-white'
+              aria-hidden='true'
+              xmlns='http://www.w3.org/2000/svg'
+              fill='currentColor'
+              viewBox='0 0 12 16'
+            >
+              <path d='M11 0a1 1 0 0 0-1 1v5.7a2.028 2.028 0 0 0-.177-.194L3.33.732A2 2 0 0 0 0 2.227v11.546A1.977 1.977 0 0 0 1.181 15.6a1.982 1.982 0 0 0 2.147-.33l6.5-5.773A1.88 1.88 0 0 0 10 9.3V15a1 1 0 1 0 2 0V1a1 1 0 0 0-1-1Z' />
+            </svg>
+          </button>
         </div>
 
         {/* Timeline */}
+        <div>
+          
+        </div>
+        <div className='bg-red-100 w-[70%] flex justify-start'>
+          <div className='w-9/12 bg-gray-200 rounded-full h-2.5 mb-4 dark:bg-gray-700'>
+            <div
+              className='bg-blue-600 h-2.5 rounded-full dark:bg-blue-500'
+              style={{ width: '45%' }}
+            ></div>
+          </div>
+        </div>
+
         <div
           style={{
-            position: "absolute",
-            top: "95%",
-            left: "50%",
-            width: "80%",
-            transform: "translateX(-50%)",
+            position: 'absolute',
+            top: '95%',
+            left: '50%',
+            width: '80%',
+            transform: 'translateX(-50%)',
           }}
           onClick={updateTimeline}
         >
           <div
             style={{
-              width: "100%",
-              height: "10px",
-              backgroundColor: "#ccc",
-              position: "relative",
+              width: '100%',
+              height: '10px',
+              backgroundColor: '#ccc',
+              position: 'relative',
             }}
           >
             <div
@@ -357,8 +415,8 @@ function PLYPlayer(props: Props) {
                 width: `${
                   (currentModelIndex / props.mandibularFiles.length) * 100
                 }%`,
-                height: "100%",
-                backgroundColor: "#007bff",
+                height: '100%',
+                backgroundColor: '#007bff',
               }}
             ></div>
           </div>
