@@ -11,7 +11,7 @@ const Download = () => {
   const [maxillaryFiles, setMaxillaryFiles] = useState<File[]>([]);
   const [models, setModels] = useState<string[]>([]);
   const [progress, setProgress] = useState<number | null>(null);
-  const [downloaded, setDownloaded] = useState<boolean>(false);
+  const [downloadedModel, setDownloadedModel] = useState<string | null>(null); // New state
   const [play, setPlay] = useState<boolean>(false);
 
   const fetchAllModels = async () => {
@@ -19,34 +19,33 @@ const Download = () => {
     setModels(data.data);
   };
 
-  const downloadModels = (urls: string[]) => {
+  const downloadModels = (folder: string, urls: string[]) => {
     setProgress(null);
     worker.postMessage({
       type: 'download',
       urls: urls,
     });
+    setDownloadedModel(folder);
   };
 
   const getUrls = async (folder: string) => {
     const { data } = await axios.get(
       `http://localhost:3001/${folder}/get-files`
     );
-    downloadModels(data.data);
+    downloadModels(folder, data.data);
   };
 
   worker.onmessage = (event) => {
     if (event.data.type === 'progress') {
-      setDownloaded(false);
       setProgress(event.data.progress);
     }
     if (event.data.type === 'complete') {
       setProgress(100);
-      setDownloaded(true);
       setMandibularFiles(event.data.Mandibular);
       setMaxillaryFiles(event.data.Maxillary);
     }
     if (event.data.type === 'error') {
-      setDownloaded(false);
+        console.log('Error')
     }
   };
 
@@ -96,7 +95,11 @@ const Download = () => {
                         {e.slice(0, -1)}
                       </th>
                       <td className='px-6 py-4'>-</td>
-                      <td className='px-6 py-4'>-</td>
+                      <td className='px-6 py-4'>
+                        {downloadedModel === e.slice(0, -1) && progress
+                          ? `${progress.toFixed(0)}%`
+                          : '-'}
+                      </td>
                       <td className='px-6 py-4'>
                         <button
                           type='button'
@@ -107,7 +110,7 @@ const Download = () => {
                         >
                           Download
                         </button>
-                        {downloaded && (
+                        {downloadedModel === e.slice(0, -1) && progress == 100 && (
                           <button
                             type='button'
                             className='text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800'
@@ -133,7 +136,6 @@ const Download = () => {
           className='text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800'
           onClick={() => {
             setPlay(false);
-            setDownloaded(false);
           }}
         >
           All Models

@@ -265,11 +265,13 @@ function PLYPlayer(props: Props) {
 
   return (
     <>
-      {props.uploadPercentage && props.timeElapsed && (
+      {props.uploadPercentage ? (
         <UploadToast
           uploadPercentage={props.uploadPercentage}
-          timeElapsed={props.timeElapsed}
+          timeElapsed={props.timeElapsed ? props.timeElapsed : 0}
         />
+      ) : (
+        ''
       )}
 
       <div
@@ -403,7 +405,6 @@ function PLYPlayer(props: Props) {
             width: '50%',
             transform: 'translateX(-50%)',
             borderRadius: '50px',
-           
           }}
           onClick={updateTimeline}
         >
@@ -423,7 +424,7 @@ function PLYPlayer(props: Props) {
                 }%`,
                 height: '100%',
                 backgroundColor: '#007bff',
-               
+
                 borderRadius: '50px',
               }}
             ></div>
