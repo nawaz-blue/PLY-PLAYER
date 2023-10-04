@@ -6,6 +6,7 @@ const Download = () => {
   const worker = new Worker(new URL('./worker.ts', import.meta.url), {
     type: 'module',
   });
+
   const [mandibularFiles, setMandibularFiles] = useState<File[]>([]);
   const [maxillaryFiles, setMaxillaryFiles] = useState<File[]>([]);
   const [models, setModels] = useState<string[]>([]);
@@ -19,7 +20,6 @@ const Download = () => {
 
   const downloadModels = (urls: string[]) => {
     setProgress(null);
-
     worker.postMessage({
       type: 'download',
       urls: urls,
@@ -44,7 +44,6 @@ const Download = () => {
       setMandibularFiles(event.data.Mandibular);
       setMaxillaryFiles(event.data.Maxillary);
     }
-
     if (event.data.type === 'error') {
       setDownloaded(false);
     }
@@ -109,7 +108,6 @@ const Download = () => {
                       <button
                         type='button'
                         className='text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800'
-                        
                       >
                         Play
                       </button>
