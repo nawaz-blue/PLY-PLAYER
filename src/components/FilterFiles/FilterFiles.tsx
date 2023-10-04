@@ -14,6 +14,9 @@ const FilterFiles: React.FC = () => {
 
   function orderFolders(folders: string[]): string[] {
     return folders.sort((a, b) => {
+      if (a === "EXPORT") return 1;
+      if (b === "EXPORT") return -1;
+
       const aMatches = a.match(/EXPORT_STEP(\d+)(_Subsetup(\d+))?/);
       const bMatches = b.match(/EXPORT_STEP(\d+)(_Subsetup(\d+))?/);
 
@@ -22,7 +25,6 @@ const FilterFiles: React.FC = () => {
 
       if (aStep !== bStep) return aStep - bStep;
 
-      // If one of the folder names does not have a substep, place it after all substeps
       if (!aMatches?.[3] || !bMatches?.[3]) {
         return aMatches?.[3] ? -1 : 1;
       }
@@ -43,6 +45,7 @@ const FilterFiles: React.FC = () => {
 
     Array.from(event.target.files).forEach((file) => {
       const folder = file.webkitRelativePath.split("/")[1];
+      console.log(folder);
       if (!folderFilesMap[folder]) {
         folderFilesMap[folder] = [];
       }
@@ -50,6 +53,7 @@ const FilterFiles: React.FC = () => {
     });
 
     const sortedFolders = orderFolders(Object.keys(folderFilesMap));
+    console.log(sortedFolders);
 
     sortedFolders.forEach((folder: string) => {
       folderFilesMap[folder].forEach((file) => {
