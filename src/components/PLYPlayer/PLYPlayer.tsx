@@ -380,7 +380,7 @@ function PLYPlayer(props: Props) {
         </div>
 
         {/* Timeline */}
-        <div>
+        {/* <div>
           
         </div>
         <div className='bg-red-100 w-[70%] flex justify-start'>
@@ -390,7 +390,7 @@ function PLYPlayer(props: Props) {
               style={{ width: '45%' }}
             ></div>
           </div>
-        </div>
+        </div> */}
 
         <div
           style={{

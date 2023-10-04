@@ -63,7 +63,7 @@ const UploadToast = (props: Props) => {
               style={{ width: `${uploadPercentage}%` }}
             >
               {' '}
-              {uploadPercentage}%
+              {uploadPercentage.toFixed(0)}%
             </div>
           </div>
           <div className='text-sm font-normal mt-2'>{!uploaded ? ``: `Elasped time : ${timeElapsed}ms`}</div>

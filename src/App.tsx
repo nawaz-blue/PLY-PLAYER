@@ -1,13 +1,13 @@
-import './App.css'
-import FilterFiles from './components/FilterFiles/FilterFiles'
+import './App.css';
+import { BrowserRouter as Router } from 'react-router-dom';
+import AppRoutes from './Routes';
 
 function App() {
-
   return (
-    <div className='main'>
-      <FilterFiles/>
-    </div>
-  )
+    <Router>
+      <AppRoutes />
+    </Router>
+  );
 }
 
-export default App
+export default App;
