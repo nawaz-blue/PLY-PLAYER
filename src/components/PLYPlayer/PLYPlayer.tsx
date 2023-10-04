@@ -8,8 +8,8 @@ import UploadToast from '../UploadToast/UploadToast';
 interface Props {
   mandibularFiles: File[];
   maxillaryFiles: File[];
-  uploadPercentage: number;
-  timeElapsed: number;
+  uploadPercentage?: number;
+  timeElapsed?: number;
 }
 
 function PLYPlayer(props: Props) {
@@ -265,10 +265,13 @@ function PLYPlayer(props: Props) {
 
   return (
     <>
-      <UploadToast
-        uploadPercentage={props.uploadPercentage}
-        timeElapsed={props.timeElapsed}
-      />
+      {props.uploadPercentage && props.timeElapsed && (
+        <UploadToast
+          uploadPercentage={props.uploadPercentage}
+          timeElapsed={props.timeElapsed}
+        />
+      )}
+
       <div
         style={{
           background: '#282828',
@@ -397,8 +400,10 @@ function PLYPlayer(props: Props) {
             position: 'absolute',
             top: '95%',
             left: '50%',
-            width: '80%',
+            width: '50%',
             transform: 'translateX(-50%)',
+            borderRadius: '50px',
+           
           }}
           onClick={updateTimeline}
         >
@@ -408,6 +413,7 @@ function PLYPlayer(props: Props) {
               height: '10px',
               backgroundColor: '#ccc',
               position: 'relative',
+              borderRadius: '50px',
             }}
           >
             <div
@@ -417,6 +423,8 @@ function PLYPlayer(props: Props) {
                 }%`,
                 height: '100%',
                 backgroundColor: '#007bff',
+               
+                borderRadius: '50px',
               }}
             ></div>
           </div>
