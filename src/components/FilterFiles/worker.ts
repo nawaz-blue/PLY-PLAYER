@@ -13,7 +13,7 @@ onmessage = async (ev: MessageEvent) => {
       const file = allFiles[i];
       try {
         const { data } = await axios.get(
-          `http://localhost:3001/get-pre-signed-url?filename=${file.name}&folderName=${folderName}`
+          `http://13.126.77.231:3001/get-pre-signed-url?filename=${file.name}&folderName=${folderName}`
         );
 
         await axios.put(data.url, file, {

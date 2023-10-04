@@ -70,13 +70,13 @@ const Download = () => {
     setDownloadedModel(folder);
     setLoading(true);
     const { data } = await axios.get(
-      `http://localhost:3001/${folder}/get-files`
+      `http://13.126.77.231:3001/${folder}/get-files`
     );
     await downloadModels(folder, data.data);
   };
 
   const fetchAllModels = async () => {
-    const { data } = await axios.get(`http://localhost:3001/get-dir`);
+    const { data } = await axios.get(`http://13.126.77.231:3001/get-dir`);
     setModels(data.data);
   };
 

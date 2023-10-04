@@ -1,4 +1,5 @@
 import React, { useState, ChangeEvent } from 'react';
+import {Link} from 'react-router-dom';
 import PLYPlayer from '../PLYPlayer/PLYPlayer';
 
 const FilterFiles: React.FC = () => {
@@ -66,6 +67,14 @@ const FilterFiles: React.FC = () => {
 
   return (
     <div>
+      <div style={{margin: '40px 0 0 50px', width: '120px',}}>
+     
+
+      <Link to='download' >
+      <button type="button" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">All Models</button>
+      </Link>
+      </div>
+
       {mandibularFiles.length == 0 ? (
         <div className='p-16 flex items-center justify-center w-full'>
           <label
