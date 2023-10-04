@@ -43,8 +43,8 @@ onmessage = async (ev: MessageEvent) => {
     try {
       const { urls } = ev.data;
       const progressPerFile = 100 / urls.length;
-      const Maxillary: File[] = [];
-      const Mandibular: File[] = [];
+      let Maxillary: File[] = [];
+      let Mandibular: File[] = [];
 
       for (const url of urls) {
         const downloadedFile = await downloadFile(url, progressPerFile);
@@ -60,7 +60,9 @@ onmessage = async (ev: MessageEvent) => {
         type: 'complete',
         Maxillary,
         Mandibular,
-      });
+      })
+      Maxillary = []
+      Mandibular = []
     } catch (error) {
       console.log(error);
     }

@@ -21,6 +21,8 @@ const Download = () => {
 
   const downloadModels = (folder: string, urls: string[]) => {
     setProgress(null);
+    setMandibularFiles([])
+    setMaxillaryFiles([])
     worker.postMessage({
       type: 'download',
       urls: urls,
@@ -74,7 +76,7 @@ const Download = () => {
                     Size
                   </th>
                   <th scope='col' className='px-6 py-3'>
-                    Upload Date
+                    Progress
                   </th>
                   <th scope='col' className='px-6 py-3'>
                     Action
@@ -108,7 +110,7 @@ const Download = () => {
                             getUrls(e.slice(0, -1));
                           }}
                         >
-                          Download
+                          Preview
                         </button>
                         {downloadedModel === e.slice(0, -1) && progress == 100 && (
                           <button
