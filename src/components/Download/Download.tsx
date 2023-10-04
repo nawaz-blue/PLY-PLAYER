@@ -3,52 +3,81 @@ import axios from 'axios';
 import PLYPlayer from '../PLYPlayer/PLYPlayer';
 
 const Download = () => {
-  const worker = new Worker(new URL('./worker.ts', import.meta.url), {
-    type: 'module',
-  });
-
   const [mandibularFiles, setMandibularFiles] = useState<File[]>([]);
   const [maxillaryFiles, setMaxillaryFiles] = useState<File[]>([]);
   const [models, setModels] = useState<string[]>([]);
   const [progress, setProgress] = useState<number | null>(null);
-  const [downloadedModel, setDownloadedModel] = useState<string | null>(null); // New state
+  const [downloadedModel, setDownloadedModel] = useState<string | null>(null);
   const [play, setPlay] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  let cumulativeProgress = 0;
 
-  const fetchAllModels = async () => {
-    const { data } = await axios.get(`http://localhost:3001/get-dir`);
-    setModels(data.data);
+  const downloadFile = async (url: string, progressPerFile: number) => {
+    let individualProgress = 0;
+    try {
+      const response = await axios.get(url, {
+        responseType: 'arraybuffer',
+        onDownloadProgress: (progressEvent) => {
+          const currentProgress =
+            (progressEvent.loaded / Number(progressEvent.total)) *
+            progressPerFile;
+          const progressIncrement = currentProgress - individualProgress;
+          cumulativeProgress += progressIncrement;
+          individualProgress = currentProgress;
+
+          setProgress(Math.min(cumulativeProgress, 100));
+        },
+      });
+
+      const file = new File(
+        [response.data],
+        url.split('/').pop() || 'downloaded-file'
+      );
+
+      return file;
+    } catch (error) {
+      console.error(`Error downloading file from ${url}:`, error);
+      return null;
+    }
   };
 
-  const downloadModels = (folder: string, urls: string[]) => {
+  const downloadModels = async (folder: string, urls: string[]) => {
     setProgress(null);
-    setMandibularFiles([])
-    setMaxillaryFiles([])
-    worker.postMessage({
-      type: 'download',
-      urls: urls,
-    });
+    setMandibularFiles([]);
+    setMaxillaryFiles([]);
+    const progressPerFile = 100 / urls.length;
+    let Maxillary: File[] = [];
+    let Mandibular: File[] = [];
+
+    for (const url of urls) {
+      const downloadedFile = await downloadFile(url, progressPerFile);
+      if (downloadedFile) {
+        if (downloadedFile.name.includes('Maxillary')) {
+          Maxillary.push(downloadedFile);
+        } else {
+          Mandibular.push(downloadedFile);
+        }
+      }
+    }
+    setProgress(100);
+    setLoading(false);
+    setMandibularFiles(Mandibular);
+    setMaxillaryFiles(Maxillary);
     setDownloadedModel(folder);
   };
 
   const getUrls = async (folder: string) => {
+    setDownloadedModel(folder);
+    setLoading(true);
     const { data } = await axios.get(
       `http://localhost:3001/${folder}/get-files`
     );
-    downloadModels(folder, data.data);
+    await downloadModels(folder, data.data);
   };
 
-  worker.onmessage = (event) => {
-    if (event.data.type === 'progress') {
-      setProgress(event.data.progress);
-    }
-    if (event.data.type === 'complete') {
-      setProgress(100);
-      setMandibularFiles(event.data.Mandibular);
-      setMaxillaryFiles(event.data.Maxillary);
-    }
-    if (event.data.type === 'error') {
-        console.log('Error')
-    }
+  const fetchAllModels = async () => {
+    const { data } = await axios.get(`http://localhost:3001/get-dir`);
+    setModels(data.data);
   };
 
   useEffect(() => {
@@ -69,16 +98,13 @@ const Download = () => {
             <table className='w-full text-sm text-left text-gray-500 dark:text-gray-400'>
               <thead className='text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400'>
                 <tr>
-                  <th scope='col' className='px-6 py-3'>
+                  <th scope='col' className='px-6 py-3 w-24'>
                     Model
                   </th>
-                  <th scope='col' className='px-6 py-3'>
-                    Size
+                  <th scope='col' className='px-6 py-3 w-24'>
+                    State
                   </th>
-                  <th scope='col' className='px-6 py-3'>
-                    Progress
-                  </th>
-                  <th scope='col' className='px-6 py-3'>
+                  <th scope='col' className='px-6 py-3 w-24'>
                     Action
                   </th>
                 </tr>
@@ -96,33 +122,46 @@ const Download = () => {
                       >
                         {e.slice(0, -1)}
                       </th>
-                      <td className='px-6 py-4'>-</td>
                       <td className='px-6 py-4'>
-                        {downloadedModel === e.slice(0, -1) && progress
-                          ? `${progress.toFixed(0)}%`
+                        {downloadedModel === e.slice(0, -1) && loading
+                          ? 'Loading...'
                           : '-'}
                       </td>
                       <td className='px-6 py-4'>
-                        <button
-                          type='button'
-                          className='text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800'
-                          onClick={() => {
-                            getUrls(e.slice(0, -1));
-                          }}
-                        >
-                          Preview
-                        </button>
-                        {downloadedModel === e.slice(0, -1) && progress == 100 && (
+                        {loading ? (
                           <button
                             type='button'
-                            className='text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800'
-                            onClick={() => {
-                              setPlay(true);
-                            }}
+                            className='text-white bg-gray-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800'
+                            disabled
                           >
-                            Play
+                            Preview
                           </button>
+                        ) : (
+                          downloadedModel !== e.slice(0, -1) && (
+                            <button
+                              type='button'
+                              className='text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800'
+                              onClick={() => {
+                                getUrls(e.slice(0, -1));
+                              }}
+                            >
+                              Preview
+                            </button>
+                          )
                         )}
+
+                        {downloadedModel === e.slice(0, -1) &&
+                          progress == 100 && (
+                            <button
+                              type='button'
+                              className='text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800'
+                              onClick={() => {
+                                setPlay(true);
+                              }}
+                            >
+                              Play
+                            </button>
+                          )}
                       </td>
                     </tr>
                   );
