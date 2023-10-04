@@ -11,7 +11,6 @@ const Download = () => {
   const [models, setModels] = useState<string[]>([]);
   const [progress, setProgress] = useState<number | null>(null);
   const [downloaded, setDownloaded] = useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const fetchAllModels = async () => {
     const { data } = await axios.get(`http://localhost:3001/get-dir`);
@@ -20,7 +19,6 @@ const Download = () => {
 
   const downloadModels = (urls: string[]) => {
     setProgress(null);
-    setErrorMessage(null);
 
     worker.postMessage({
       type: 'download',
@@ -49,7 +47,6 @@ const Download = () => {
 
     if (event.data.type === 'error') {
       setDownloaded(false);
-      setErrorMessage(event.data.message);
     }
   };
 
