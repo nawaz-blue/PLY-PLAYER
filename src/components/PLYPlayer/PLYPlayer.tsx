@@ -1,15 +1,18 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, SetStateAction } from 'react';
 import * as THREE from 'three';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import logo from '../../../public/LOGO.svg';
 import UploadToast from '../UploadToast/UploadToast';
+import { Link } from 'react-router-dom';
 
 interface Props {
   mandibularFiles: File[];
   maxillaryFiles: File[];
   uploadPercentage?: number;
   timeElapsed?: number;
+  setMaxillaryFiles:React.Dispatch<SetStateAction<File[]>>
+  setMandibularFiles:React.Dispatch<SetStateAction<File[]>>
 }
 
 function PLYPlayer(props: Props) {
@@ -281,12 +284,28 @@ function PLYPlayer(props: Props) {
         className='p-6'
       >
         <div className='flex justify-between align-middle'>
-          <button
-            type='button'
-            className='text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 rounded-full text-sm px-8 dark:bg-gray-600 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-gray-800'
-          >
-            Patient Details
-          </button>
+          <div>
+            <Link to='download'>
+              <button
+                type='button'
+                className='text-white bg-gray-700 py-4 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 rounded-full text-sm px-8 dark:bg-gray-600 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-gray-800'
+              >
+                All Models
+              </button>
+            </Link>
+
+            <button
+              type='button'
+              className='text-white ml-4 bg-gray-700 py-4 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 rounded-full text-sm px-8 dark:bg-gray-600 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-gray-800'
+              onClick={()=>{
+                props.setMandibularFiles([])
+                props.setMaxillaryFiles([])
+              }}
+            >
+              Upload New
+            </button>
+          </div>
+
           <img src={logo} />
           <div className=''></div>
         </div>

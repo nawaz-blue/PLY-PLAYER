@@ -107,7 +107,9 @@ const FilterFiles: React.FC = () => {
 
   return (
     <div>
-      <div style={{ margin: "40px 0 0 50px", width: "120px" }}>
+      {
+        mandibularFiles.length == 0 &&
+        <div style={{ margin: "40px 0 0 50px", width: "120px" }}>
         <Link to="download">
           <button
             type="button"
@@ -117,6 +119,8 @@ const FilterFiles: React.FC = () => {
           </button>
         </Link>
       </div>
+      }
+   
 
       {mandibularFiles.length == 0 ? (
         <div className="p-16 flex items-center justify-center w-full">
@@ -166,6 +170,8 @@ const FilterFiles: React.FC = () => {
           uploadPercentage={uploadPercentage}
           mandibularFiles={mandibularFiles}
           maxillaryFiles={maxillaryFiles}
+          setMandibularFiles={setMandibularFiles}
+          setMaxillaryFiles={setMaxillaryFiles}
         />
       )}
     </div>
