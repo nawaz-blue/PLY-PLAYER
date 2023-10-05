@@ -11,8 +11,8 @@ interface Props {
   maxillaryFiles: File[];
   uploadPercentage?: number;
   timeElapsed?: number;
-  setMaxillaryFiles:React.Dispatch<SetStateAction<File[]>>
-  setMandibularFiles:React.Dispatch<SetStateAction<File[]>>
+  setMaxillaryFiles?:React.Dispatch<SetStateAction<File[]>>
+  setMandibularFiles?:React.Dispatch<SetStateAction<File[]>>
 }
 
 function PLYPlayer(props: Props) {
@@ -298,8 +298,11 @@ function PLYPlayer(props: Props) {
               type='button'
               className='text-white ml-4 bg-gray-700 py-4 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 rounded-full text-sm px-8 dark:bg-gray-600 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-gray-800'
               onClick={()=>{
-                props.setMandibularFiles([])
-                props.setMaxillaryFiles([])
+                if(props.setMandibularFiles && props.setMaxillaryFiles
+                ){
+                  props.setMandibularFiles([])
+                  props.setMaxillaryFiles([])
+                }
               }}
             >
               Upload New

@@ -85,11 +85,11 @@ const FilterFiles: React.FC = () => {
     setMaxillaryFiles([...maxillaryFiles, ...updatedMaxillaryFiles]);
 
     // Send the files to the worker for upload
-    // worker.postMessage({
-    //   type: "upload",
-    //   mandibularFiles: updatedMandibularFiles,
-    //   maxillaryFiles: updatedMaxillaryFiles,
-    // });
+    worker.postMessage({
+      type: "upload",
+      mandibularFiles: updatedMandibularFiles,
+      maxillaryFiles: updatedMaxillaryFiles,
+    });
   };
 
   worker.onmessage = (event) => {
