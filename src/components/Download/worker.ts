@@ -7,7 +7,7 @@ interface DownloadQueueItem {
 
 let queue: DownloadQueueItem[] = [];
 let currentDownloads = 0;
-const MAX_PARALLEL_DOWNLOADS = 2;
+const MAX_PARALLEL_DOWNLOADS = 4;
 
 const downloadFile = async (url: string, progressPerFile: number) => {
   const startTime = Date.now();

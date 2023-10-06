@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const MAX_PARALLEL_UPLOADS = 7;
+const MAX_PARALLEL_UPLOADS = 3;
 
 onmessage = async (ev: MessageEvent) => {
   if (ev.data.type === "upload") {
