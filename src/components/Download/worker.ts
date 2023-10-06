@@ -1,8 +1,8 @@
-import axios from 'axios';
+import axios from "axios";
 
 interface DownloadQueueItem {
-    url: string;
-    progressPerFile: number;
+  url: string;
+  progressPerFile: number;
 }
 
 let queue: DownloadQueueItem[] = [];
@@ -10,48 +10,50 @@ let currentDownloads = 0;
 const MAX_PARALLEL_DOWNLOADS = 2;
 
 const downloadFile = async (url: string, progressPerFile: number) => {
-    let individualProgress = 0;
-    try {
-        const response = await axios.get(url, {
-            responseType: 'arraybuffer',
-            onDownloadProgress: (progressEvent) => {
-                const currentProgress =
-                    (progressEvent.loaded / Number(progressEvent.total)) *
-                    progressPerFile;
-                const progressIncrement = currentProgress - individualProgress;
-                individualProgress = currentProgress;
+  const startTime = Date.now();
+  let individualProgress = 0;
+  try {
+    const response = await axios.get(url, {
+      responseType: "arraybuffer",
+      onDownloadProgress: (progressEvent) => {
+        const currentProgress =
+          (progressEvent.loaded / Number(progressEvent.total)) *
+          progressPerFile;
+        const progressIncrement = currentProgress - individualProgress;
+        individualProgress = currentProgress;
 
-                self.postMessage({ type: 'progress', value: progressIncrement });
-            },
-        });
+        self.postMessage({ type: "progress", value: progressIncrement });
+      },
+    });
 
-        const file = new File(
-            [response.data],
-            url.split('/').pop() || 'downloaded-file'
-        );
+    const file = new File(
+      [response.data],
+      url.split("/").pop() || "downloaded-file"
+    );
+    const endTime = Date.now();
+    const timeElapsed = (endTime - startTime) / 1000;
+    self.postMessage({ type: "downloaded", file, timeElapsed });
+  } catch (error) {
+    self.postMessage({ type: "error", error: error });
+  }
 
-        self.postMessage({ type: 'downloaded', file });
-    } catch (error) {
-        self.postMessage({ type: 'error', error: error });
-    }
-
-    currentDownloads--;
-    processQueue();
+  currentDownloads--;
+  processQueue();
 };
 
 const processQueue = () => {
-    if (currentDownloads < MAX_PARALLEL_DOWNLOADS && queue.length > 0) {
-        const nextDownload = queue.shift();
-        if (nextDownload) {
-            currentDownloads++;
-            downloadFile(nextDownload.url, nextDownload.progressPerFile);
-        }
+  if (currentDownloads < MAX_PARALLEL_DOWNLOADS && queue.length > 0) {
+    const nextDownload = queue.shift();
+    if (nextDownload) {
+      currentDownloads++;
+      downloadFile(nextDownload.url, nextDownload.progressPerFile);
     }
+  }
 };
 
 onmessage = (e: MessageEvent) => {
-    if (e.data.type === 'download') {
-        queue.push({ url: e.data.url, progressPerFile: e.data.progressPerFile });
-        processQueue();
-    }
+  if (e.data.type === "download") {
+    queue.push({ url: e.data.url, progressPerFile: e.data.progressPerFile });
+    processQueue();
+  }
 };

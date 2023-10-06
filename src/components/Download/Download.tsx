@@ -12,7 +12,7 @@ const Download = () => {
   const [downloadedModel, setDownloadedModel] = useState<string | null>(null);
   const [play, setPlay] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
-
+  const [elapsedTime, setElapsedTime] = useState(0);
   const workerRef = useRef<Worker | null>(null);
 
   useEffect(() => initializeWorker(), []);
@@ -33,6 +33,7 @@ const Download = () => {
         updateProgress(e.data.value);
         break;
       case "downloaded":
+        setElapsedTime(prev => prev + e.data.timeElapsed);
         handleDownloadedFile(e.data.file);
         break;
       case "error":
@@ -75,6 +76,7 @@ const Download = () => {
   };
 
   const getUrls = async (folder: string) => {
+    setElapsedTime(0)
     const { data } = await axios.get(`${BASE_URL}/${folder}/get-files`);
     await downloadModels(folder, data.data);
   };
@@ -114,6 +116,9 @@ const Download = () => {
                     State
                   </th>
                   <th scope="col" className="px-6 py-3 w-24">
+                    Time
+                  </th>
+                  <th scope="col" className="px-6 py-3 w-24">
                     Action
                   </th>
                 </tr>
@@ -135,6 +140,9 @@ const Download = () => {
                         {downloadedModel === e.slice(0, -1)
                           ? `${progress?.toFixed(0)}%`
                           : "-"}
+                      </td>
+                      <td>
+                        {downloadedModel === e.slice(0, -1) ? `${elapsedTime.toFixed(0)}s` : "-"}
                       </td>
                       <td className="px-6 py-4">
                         {loading ? (
