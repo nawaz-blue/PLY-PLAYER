@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import PLYPlayer from '../PLYPlayer/PLYPlayer';
 
@@ -11,6 +11,44 @@ const Download = () => {
   const [play, setPlay] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   let cumulativeProgress = 0;
+  const workerRef = useRef<Worker | null>(null);
+
+  const div = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    workerRef.current = new Worker(new URL('./worker.ts', import.meta.url), {
+      type: 'module',
+    });
+
+    workerRef.current.onmessage = (e) => {
+      switch (e.data.type) {
+        case 'progress':
+          cumulativeProgress += e.data.value;
+          setProgress(Math.min(cumulativeProgress, 100));
+          break;
+        case 'downloaded':
+          handleDownloadedFile(e.data.file);
+          break;
+        case 'error':
+          console.error('Error downloading:', e.data.error);
+          break;
+      }
+    };
+
+    return () => {
+      workerRef.current?.terminate(); // This will terminate the worker when the component unmounts.
+    };
+  }, []);
+
+  const handleDownloadedFile = (file: File) => {
+    if (file.name.includes('Maxillary')) {
+      console.log('Maxillary', file);
+      setMaxillaryFiles((prevFiles) => [...prevFiles, file]);
+    } else {
+      console.log('Mandibular', file);
+      setMandibularFiles((prevFiles) => [...prevFiles, file]);
+    }
+  };
 
   const downloadFile = async (url: string, progressPerFile: number) => {
     let individualProgress = 0;
@@ -50,15 +88,9 @@ const Download = () => {
     let Mandibular: File[] = [];
 
     for (const url of urls) {
-      const downloadedFile = await downloadFile(url, progressPerFile);
-      if (downloadedFile) {
-        if (downloadedFile.name.includes('Maxillary')) {
-          Maxillary.push(downloadedFile);
-        } else {
-          Mandibular.push(downloadedFile);
-        }
-      }
+      workerRef.current?.postMessage({ url, progressPerFile });
     }
+
     setProgress(100);
     setLoading(false);
     setMandibularFiles(Mandibular);
@@ -80,12 +112,26 @@ const Download = () => {
     setModels(data.data);
   };
 
+  const changeColor = () => {
+    if (div && div.current) {
+      const colors = ['red', 'green', 'yellow', 'brown'];
+      let randomColor;
+
+      do {
+        randomColor = colors[Math.floor(Math.random() * colors.length)];
+      } while (randomColor === div.current.style.background);
+
+      div.current.style.background = randomColor;
+    }
+  };
+
   useEffect(() => {
     fetchAllModels();
   }, []);
 
   return (
-    <div className='p-16'>
+    <div className='p-16' ref={div}>
+      <button onClick={changeColor}>Change</button>
       {!play && (
         <>
           <h1 className='text-lg font-extrabold text-gray-900 dark:text-white md:text-5xl lg:text-3xl mb-8'>
