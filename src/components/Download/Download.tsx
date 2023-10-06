@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import PLYPlayer from '../PLYPlayer/PLYPlayer';
 
+const BASE_URL = `http://13.126.77.231:3001`;
+
 const Download = () => {
   const [mandibularFiles, setMandibularFiles] = useState<File[]>([]);
   const [maxillaryFiles, setMaxillaryFiles] = useState<File[]>([]);
@@ -10,14 +12,13 @@ const Download = () => {
   const [downloadedModel, setDownloadedModel] = useState<string | null>(null);
   const [play, setPlay] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
-  let cumulativeProgress = 0;
-  const workerRef = useRef<Worker | null>(null);
 
-  const div = useRef<HTMLDivElement | null>(null);
+  const workerRef = useRef<Worker | null>(null);
+  let cumulativeProgress = 0;
 
   useEffect(() => {
-    workerRef.current = new Worker(new URL('./worker.ts', import.meta.url), {
-      type: 'module',
+    workerRef.current = new Worker(new URL("./worker.ts", import.meta.url), {
+      type: "module",
     });
 
     workerRef.current.onmessage = (e) => {
@@ -36,46 +37,15 @@ const Download = () => {
     };
 
     return () => {
-      workerRef.current?.terminate(); // This will terminate the worker when the component unmounts.
+      workerRef.current?.terminate();  // Terminate the worker when the component unmounts.
     };
   }, []);
 
   const handleDownloadedFile = (file: File) => {
     if (file.name.includes('Maxillary')) {
-      console.log('Maxillary', file);
       setMaxillaryFiles((prevFiles) => [...prevFiles, file]);
     } else {
-      console.log('Mandibular', file);
       setMandibularFiles((prevFiles) => [...prevFiles, file]);
-    }
-  };
-
-  const downloadFile = async (url: string, progressPerFile: number) => {
-    let individualProgress = 0;
-    try {
-      const response = await axios.get(url, {
-        responseType: 'arraybuffer',
-        onDownloadProgress: (progressEvent) => {
-          const currentProgress =
-            (progressEvent.loaded / Number(progressEvent.total)) *
-            progressPerFile;
-          const progressIncrement = currentProgress - individualProgress;
-          cumulativeProgress += progressIncrement;
-          individualProgress = currentProgress;
-
-          setProgress(Math.min(cumulativeProgress, 100));
-        },
-      });
-
-      const file = new File(
-        [response.data],
-        url.split('/').pop() || 'downloaded-file'
-      );
-
-      return file;
-    } catch (error) {
-      console.error(`Error downloading file from ${url}:`, error);
-      return null;
     }
   };
 
@@ -88,9 +58,9 @@ const Download = () => {
     let Mandibular: File[] = [];
 
     for (const url of urls) {
-      workerRef.current?.postMessage({ url, progressPerFile });
+      workerRef.current?.postMessage({ type: 'download', url, progressPerFile });
     }
-
+    
     setProgress(100);
     setLoading(false);
     setMandibularFiles(Mandibular);
@@ -102,36 +72,23 @@ const Download = () => {
     setDownloadedModel(folder);
     setLoading(true);
     const { data } = await axios.get(
-      `http://13.126.77.231:3001/${folder}/get-files`
+      `${BASE_URL}/${folder}/get-files`
     );
     await downloadModels(folder, data.data);
   };
 
   const fetchAllModels = async () => {
-    const { data } = await axios.get(`http://13.126.77.231:3001/get-dir`);
+    const { data } = await axios.get(`${BASE_URL}/get-dir`);
     setModels(data.data);
   };
 
-  const changeColor = () => {
-    if (div && div.current) {
-      const colors = ['red', 'green', 'yellow', 'brown'];
-      let randomColor;
-
-      do {
-        randomColor = colors[Math.floor(Math.random() * colors.length)];
-      } while (randomColor === div.current.style.background);
-
-      div.current.style.background = randomColor;
-    }
-  };
 
   useEffect(() => {
     fetchAllModels();
   }, []);
 
   return (
-    <div className='p-16' ref={div}>
-      <button onClick={changeColor}>Change</button>
+    <div className='p-16'>
       {!play && (
         <>
           <h1 className='text-lg font-extrabold text-gray-900 dark:text-white md:text-5xl lg:text-3xl mb-8'>
@@ -170,7 +127,7 @@ const Download = () => {
                       </th>
                       <td className='px-6 py-4'>
                         {downloadedModel === e.slice(0, -1) && loading
-                          ? 'Loading...'
+                          ? `${progress}`
                           : '-'}
                       </td>
                       <td className='px-6 py-4'>
