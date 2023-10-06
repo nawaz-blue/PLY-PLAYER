@@ -49,7 +49,7 @@ const processQueue = () => {
     }
 };
 
-self.onmessage = (e: MessageEvent) => {
+onmessage = (e: MessageEvent) => {
     if (e.data.type === 'download') {
         queue.push({ url: e.data.url, progressPerFile: e.data.progressPerFile });
         processQueue();

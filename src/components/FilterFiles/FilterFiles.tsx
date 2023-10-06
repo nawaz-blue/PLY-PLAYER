@@ -39,6 +39,9 @@ const FilterFiles: React.FC = () => {
   const handleFileUpload = (event: ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files) return;
 
+    let mandibularCount = mandibularFiles.length + 1;
+    let maxillaryCount = maxillaryFiles.length + 1;
+
     const folderFilesMap: { [key: string]: File[] } = {};
     const mandibularMap: { [key: string]: File[] } = {};
     const maxillaryMap: { [key: string]: File[] } = {};
@@ -64,15 +67,19 @@ const FilterFiles: React.FC = () => {
           };
 
           if (file.name.includes("Mandibular")) {
+            const newFileName = `Mandibular${mandibularCount}.ply`;
             if (!mandibularMap[folder]) {
               mandibularMap[folder] = [];
             }
-            mandibularMap[folder].push(new File([file], file.name, fileInfo));
+            mandibularMap[folder].push(new File([file], newFileName, fileInfo));
+            mandibularCount++;
           } else {
+            const newFileName = `Maxillary${maxillaryCount}.ply`;
             if (!maxillaryMap[folder]) {
               maxillaryMap[folder] = [];
             }
-            maxillaryMap[folder].push(new File([file], file.name, fileInfo));
+            maxillaryMap[folder].push(new File([file], newFileName, fileInfo));
+            maxillaryCount++;
           }
         }
       });
@@ -107,20 +114,18 @@ const FilterFiles: React.FC = () => {
 
   return (
     <div>
-      {
-        mandibularFiles.length == 0 &&
+      {mandibularFiles.length == 0 && (
         <div style={{ margin: "40px 0 0 50px", width: "120px" }}>
-        <Link to="download">
-          <button
-            type="button"
-            className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
-          >
-            All Models
-          </button>
-        </Link>
-      </div>
-      }
-   
+          <Link to="download">
+            <button
+              type="button"
+              className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+            >
+              All Models
+            </button>
+          </Link>
+        </div>
+      )}
 
       {mandibularFiles.length == 0 ? (
         <div className="p-16 flex items-center justify-center w-full">
