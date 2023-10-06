@@ -1,16 +1,35 @@
-import React, { useState, ChangeEvent } from "react";
+import React, { useState, ChangeEvent, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import PLYPlayer from "../PLYPlayer/PLYPlayer";
 
 const FilterFiles: React.FC = () => {
-  const worker = new Worker(new URL("./worker.ts", import.meta.url), {
-    type: "module",
-  });
+  const workerRef = useRef<Worker | null>(null);
+
   const [uploadPercentage, setUploadPercentage] = useState<number>(0);
   const [timeElapsed, setTimeElapsed] = useState<number>(0);
 
   const [mandibularFiles, setMandibularFiles] = useState<File[]>([]);
   const [maxillaryFiles, setMaxillaryFiles] = useState<File[]>([]);
+
+  useEffect(() => {
+    workerRef.current = new Worker(new URL("./worker.ts", import.meta.url), {
+      type: "module",
+    });
+
+    workerRef.current.onmessage = (event) => {
+      if (event.data.type === "progress") {
+        setUploadPercentage(event.data.percentage);
+        setTimeElapsed(0);
+      }
+      if (event.data.type === "complete") {
+        setTimeElapsed(event.data.timeElapsed);
+      }
+    };
+
+    return () => {
+      workerRef.current?.terminate();
+    };
+  }, []);
 
   function orderFolders(folders: string[]): string[] {
     return folders.sort((a, b) => {
@@ -91,25 +110,11 @@ const FilterFiles: React.FC = () => {
     setMandibularFiles([...mandibularFiles, ...updatedMandibularFiles]);
     setMaxillaryFiles([...maxillaryFiles, ...updatedMaxillaryFiles]);
 
-    // Send the files to the worker for upload
-    worker.postMessage({
+    workerRef.current?.postMessage({
       type: "upload",
       mandibularFiles: updatedMandibularFiles,
       maxillaryFiles: updatedMaxillaryFiles,
     });
-  };
-
-  worker.onmessage = (event) => {
-    if (event.data.type === "progress") {
-      setUploadPercentage(event.data.percentage);
-      setTimeElapsed(0);
-    }
-    if (event.data.type === "complete") {
-      setTimeElapsed(event.data.timeElapsed);
-      // alert(
-      //   `Files uploaded successfully. Time elapsed: ${event.data.timeElapsed} seconds`
-      // );
-    }
   };
 
   return (
